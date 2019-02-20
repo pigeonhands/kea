@@ -4,7 +4,7 @@ version = "0.1.0"
 authors = ["Sam <sam.mackenzie@live.com>"]
 edition = "2018"
 license="MIT"
-description="aplm bindings and wrapper for rust"
+description="aur helper written in rust "
 keywords = ["arch", "aur", "pacman", "arch", "linux", "yaourt"]
 
 [dependencies]
