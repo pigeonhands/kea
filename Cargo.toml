@@ -5,7 +5,8 @@ authors = ["Sam <sam.mackenzie@live.com>"]
 edition = "2018"
 license="MIT"
 description="aur helper written in rust "
-keywords = ["arch", "aur", "pacman", "arch", "linux", "yaourt"]
+keywords = ["arch", "aur", "pacman", "arch", "yaourt"]
 
 [dependencies]
 alpm-rs="*"
+clap = "2.32.0"
