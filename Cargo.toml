@@ -8,5 +8,5 @@ description="aur helper written in rust "
 keywords = ["arch", "aur", "pacman", "arch", "yaourt"]
 
 [dependencies]
-alpm-rs="*"
+alpm-rs="0.1.1"
 clap = "2.32.0"
