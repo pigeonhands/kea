@@ -5,7 +5,8 @@ authors = ["Sam <sam.mackenzie@live.com>"]
 edition = "2018"
 license="MIT"
 repository="https://github.com/BahNahNah/kea"
-description="aur helper written in rust "
+description="aur helper written in rust"
+readme="README.md"
 keywords = ["arch", "aur", "pacman", "arch", "yaourt"]
 
 [dependencies]
