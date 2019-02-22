@@ -48,6 +48,31 @@ impl PackageInfoList{
     pub fn len(&self) -> usize {
         self.pkgs.len()
     }
+
+    pub fn push(&mut self, p: PackageInfo) {
+        self.pkgs.push(p);
+    }
+
+    pub fn merge(&mut self, lst: PackageInfoList) {
+        for p in lst.pkgs{
+            self.pkgs.push(p);
+        }
+    }
+
+    #[allow(dead_code)]
+    pub fn pick(&mut self, ammount: usize) -> PackageInfoList{
+        PackageInfoList{
+            pkgs: self.pkgs[0..ammount].to_vec(),
+        }
+    }
+}
+
+impl Default for PackageInfoList {
+    fn default() -> PackageInfoList{
+        PackageInfoList{
+            pkgs: Vec::new(),
+        }
+    }
 }
 
 impl std::ops::Index<usize> for PackageInfoList {
@@ -63,6 +88,7 @@ impl From<Vec<aur::Package>> for PackageInfoList{
         PackageInfoList::from_iter(pkgs)
     }
 }
+
 
 
 impl FromIterator<aur::Package> for PackageInfoList {
