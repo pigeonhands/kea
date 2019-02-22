@@ -563,7 +563,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "kea"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "alpm-rs 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)",
  "aur-client 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
