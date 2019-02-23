@@ -10,7 +10,7 @@ readme="README.md"
 keywords = ["arch", "aur", "pacman", "arch", "yaourt"]
 
 [dependencies]
-alpm-rs="0.1.5"
+alpm-rs="0.1.7"
 aur-client="0.1.1"
 pacman="0.1.3"
 clap = "2.32.0"
@@ -18,4 +18,3 @@ crossterm = "0.6"
 dirs = "1.0"
 serde = { version = "1.0.88", features = ["derive"] }
 toml = "0.4"
-regex="1.1.0"

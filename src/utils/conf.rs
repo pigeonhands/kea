@@ -18,7 +18,7 @@ pub struct DisplayConfig{
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct PackagesConfig{
-    pub use_aur: bool,
+    pub search_aur_local_under: usize,
     pub sync_dbs: Vec<String>,
 }
 
@@ -40,7 +40,7 @@ impl Default for Config{
             display: DisplayConfig{
             },
             packages: PackagesConfig{
-                use_aur: true,
+                search_aur_local_under: 80,
                 sync_dbs: pmcfg.repos.iter().map(|r| r.name.clone()).collect(),
             },
             alpm: AlpmConfig{
@@ -67,7 +67,7 @@ impl Config{
         
         if !cfg_path.exists(){
             let cfg = Config::default();
-            cfg.save();
+            cfg.save()?;
             return Ok(cfg);
         }
 
