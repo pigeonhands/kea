@@ -59,7 +59,7 @@ fn handle_input() -> Vec<i32> {
     let buffer_lines = 4; //bottom of terminal offset
     let stdin = stdin();
     let mut stdout = stdout().into_raw_mode().unwrap();    
-    let (width,height) = termion::terminal_size().expect("Failed to get size");
+    let (_,height) = termion::terminal_size().expect("Failed to get size");
 
     let x = 0;
     let mut y = height - buffer_lines;

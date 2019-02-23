@@ -15,7 +15,7 @@ type Result<T> = std::result::Result<T,Box<Error>>;
 
 fn try_main() -> Result<()>{
     let matches = App::new("kia")
-        .about("Rust aur client for arch linux")
+        .about("Package manager for arch linux")
         .author("Sam M.")
         .version(env!("CARGO_PKG_VERSION"))
     .arg(Arg::with_name("gen-conf")
