@@ -5,7 +5,7 @@ use alpm_rs;
 
 #[derive(Clone)]
 pub struct PackageInfo{
-    pub name :String,
+    pub name : String,
     pub source: String,
     pub description: String,
     pub version: String,
@@ -13,8 +13,8 @@ pub struct PackageInfo{
     pub poplarity: f64,
 }
 
-impl From<aur::Package> for PackageInfo {
-    fn from(p: aur::Package) -> PackageInfo {
+impl From<aur::Package> for PackageInfo{
+    fn from(p: aur::Package) -> PackageInfo{
         PackageInfo{
             name: p.Name,
             source: "aur".to_string(),
@@ -64,6 +64,10 @@ impl PackageInfoList{
         PackageInfoList{
             pkgs: self.pkgs[0..ammount].to_vec(),
         }
+    }
+
+    pub fn get(&mut self, index: usize) -> PackageInfo{
+        self.pkgs[index].clone()
     }
 }
 

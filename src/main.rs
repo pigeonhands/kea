@@ -11,8 +11,10 @@ use crate::utils::terminal;
 use crate::repo::package::PackageInfoList;
 use crate::repo::search;
 
-fn make_app() -> App<'static,'static> {
-    App::new("kia")
+type Result<T> = std::result::Result<T,Box<Error>>;
+
+fn try_main() -> Result<()>{
+    let matches = App::new("kia")
         .about("Rust aur client for arch linux")
         .author("Sam M.")
         .version(env!("CARGO_PKG_VERSION"))
@@ -31,11 +33,32 @@ fn make_app() -> App<'static,'static> {
         .index(1)
         .help("package to search aur for")
         .required(false))
+        .get_matches();
+
+    let cfg = get_config(&matches)?;
+    let alpm = alpm_rs::initialize(&cfg.alpm.root_dir, &cfg.alpm.db_path)?;
+
+    for db in &cfg.packages.sync_dbs {
+        alpm.register_syncdb(&db, 0);
+    }
+
+
+    match matches.value_of("package"){
+        Some(package) => {
+            let selected = handle_package_selection(&alpm, &matches, &cfg, package)?;
+            for p in selected.pkgs{
+                println!("{}", p.name);
+            }
+        },
+        None => {
+
+        },
+    }
+
+    Ok(())
 }
 
-fn try_main() -> Result<(), Box<Error>> {
-    let matches = make_app().get_matches();
-
+fn get_config(matches: &ArgMatches) -> Result<Config> {
     let mut cfg : Config;
 
     if matches.is_present("gen-conf"){
@@ -51,33 +74,10 @@ fn try_main() -> Result<(), Box<Error>> {
         }
     }
 
-    let alpm = alpm_rs::initialize(&cfg.alpm.root_dir, &cfg.alpm.db_path)?;
-
-    for db in &cfg.packages.sync_dbs {
-        alpm.register_syncdb(&db, 0);
-    }
-
-   
-    
-    match matches.subcommand(){
-        ("remove", Some(_remove))=>{
-            
-        },
-       _ => { //search aur
-            match matches.value_of("package"){
-                None => {},
-                Some(package) => {
-                    handle_search(&alpm, &matches, &cfg, package)?;
-                },
-            }
-
-        }
-    }
-
-    Ok(())
+    Ok(cfg)
 }
 
-fn handle_search(alpm: &alpm_rs::Handle, matches: &ArgMatches, cfg: &Config, query: &str) -> Result<(), Box<Error>> {
+fn handle_package_selection(alpm: &alpm_rs::Handle, matches: &ArgMatches, cfg: &Config, query: &str) -> Result<PackageInfoList> {
 
     let mut pkgs = PackageInfoList::default();
     let mut aur_error: Option<Box<Error>> = None;
@@ -98,9 +98,17 @@ fn handle_search(alpm: &alpm_rs::Handle, matches: &ArgMatches, cfg: &Config, que
         }
     }
 
-    terminal::package_selection(pkgs, aur_error);
-    Ok(())
+    let mut selected_packages = PackageInfoList::default();
+    let input_indexes = terminal::package_selection(&pkgs, aur_error);
+    for p in input_indexes {
+        let pind = p as usize;
+        if p >= 0 && pind < pkgs.len(){
+            selected_packages.push(pkgs.get(pkgs.len() - pind));
+        }
+    }
+    Ok(selected_packages)
 }
+
 
 
 
