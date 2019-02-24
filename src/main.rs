@@ -16,7 +16,7 @@ use termion::{color, color::Fg, style};
 type Result<T> = std::result::Result<T,Box<Error>>;
 
 fn try_main() -> Result<()>{
-    let matches = App::new("kia")
+    let mut app =  App::new("kia")
         .about("Package manager for arch linux")
         .author("Sam M.")
         .version(env!("CARGO_PKG_VERSION"))
@@ -36,9 +36,16 @@ fn try_main() -> Result<()>{
         .help("upgrade packages"))
     .arg(Arg::with_name("package")
         .index(1)
-        .help("package to search aur for")
-        .required(false))
-        .get_matches();
+        .help("package to search for")
+        .required(false));
+        
+    let help = {
+        let mut v = Vec::new();
+        app.write_long_help(&mut v)?;
+        String::from_utf8(v)?
+    };
+
+    let matches = app.get_matches();
 
     let cfg = get_config(&matches)?;
     let alpm = alpm_rs::initialize(&cfg.alpm.root_dir, &cfg.alpm.db_path)?;
@@ -87,7 +94,7 @@ fn try_main() -> Result<()>{
             }
         },
         None => {
-
+           println!("{}", help);
         },
     }
 
