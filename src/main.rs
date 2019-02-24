@@ -10,6 +10,8 @@ use std::error::Error;
 use crate::utils::terminal;
 use crate::repo::package::PackageInfoList;
 use crate::repo::search;
+use termion::{color, color::Fg, style};
+
 
 type Result<T> = std::result::Result<T,Box<Error>>;
 
@@ -28,7 +30,10 @@ fn try_main() -> Result<()>{
     .arg(Arg::with_name("aur")
         .long("aur")
         .help("Searches aur only"))
-    
+    .arg(Arg::with_name("upgrade")
+        .short("-u")
+        .long("upgrade")
+        .help("upgrade packages"))
     .arg(Arg::with_name("package")
         .index(1)
         .help("package to search aur for")
@@ -38,10 +43,41 @@ fn try_main() -> Result<()>{
     let cfg = get_config(&matches)?;
     let alpm = alpm_rs::initialize(&cfg.alpm.root_dir, &cfg.alpm.db_path)?;
 
+    alpm_rs::callbacks::set_log_callback(&alpm, |level,message| {
+        if level > alpm_rs::enums::ALPM_LOG_WARNING{
+            return;
+        }
+        let level_text = match level {
+            alpm_rs::enums::ALPM_LOG_ERROR => format!("{}error{}", Fg(color::Red), style::Reset),
+            alpm_rs::enums::ALPM_LOG_WARNING => format!("{}warn{}", Fg(color::Yellow), style::Reset),
+            alpm_rs::enums::ALPM_LOG_DEBUG => "debug".to_string(),
+            alpm_rs::enums::ALPM_LOG_FUNCTION => "func".to_string(),
+            _ => "?".to_string(),
+        };
+        print!("alpm] ({}) {}", level_text, message);
+    });
+
     for db in &cfg.packages.sync_dbs {
         alpm.register_syncdb(&db, 0);
     }
 
+    if matches.is_present("upgrade") {
+
+        let (alpm_pkgs, aur_pkgs) = repo::upgrade::get_outdated_pkgs(&alpm);
+
+        if alpm_pkgs.len() > 0 {
+            terminal::print_pkg_list("alpm", &alpm_pkgs);
+        }
+
+        if aur_pkgs.len() > 0{
+            terminal::print_pkg_list("aur", &aur_pkgs);
+        }
+
+        if alpm_pkgs.len() == 0 && aur_pkgs.len() == 0 {
+            println!("Everything is up to date.");
+        } 
+
+    }
 
     match matches.value_of("package"){
         Some(package) => {

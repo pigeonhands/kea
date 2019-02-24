@@ -21,6 +21,5 @@ pub fn search_pkg_cashe(alpm: &Handle, query: &str) -> PackageInfoList {
             pkgs.push(p.into());
         }
     }
-
     pkgs
 }

@@ -10,8 +10,8 @@ readme="README.md"
 keywords = ["arch", "aur", "pacman", "arch", "yaourt"]
 
 [dependencies]
-alpm-rs="0.1.7"
-aur-client="0.1.1"
+alpm-rs="0.1.13"
+aur-client="0.1.3"
 pacman="0.1.3"
 clap = "2.32.0"
 dirs = "1.0"

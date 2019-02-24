@@ -3,9 +3,8 @@ use termion::event::{Key};
 use termion::input::{TermRead};
 use termion::raw::IntoRawMode;
 use std::io::{Write, stdout, stdin};
-
-
 use crate::repo::package::PackageInfoList;
+
 
 
 pub fn package_selection(packages: &PackageInfoList, load_error: Option<Box<std::error::Error>>) -> Vec<i32>  {
@@ -25,7 +24,9 @@ pub fn package_selection(packages: &PackageInfoList, load_error: Option<Box<std:
     if let Some(err) = load_error{
         eprintln!("Error: {}", err);
     }
-    handle_input()
+    let inp = handle_input();
+    print!("{}{}", cursor::Show, style::Reset);
+    inp
 }
 
 fn style<T: std::fmt::Display>(input: &str, sty: T) -> String {
@@ -36,6 +37,16 @@ fn style<T: std::fmt::Display>(input: &str, sty: T) -> String {
         style::Reset
     )
 }
+
+pub fn print_pkg_list(info: &str, lst: &PackageInfoList) {
+    let pkg_str = lst.pkgs.iter().map(|p| 
+        format!("{}{}{}", Fg(color::LightCyan), p.name, style::Reset))
+        .collect::<Vec<String>>().join(", ");
+
+    println!("{} ", pkg_str);
+    println!("{}[{}]{}{} packages{}", Fg(color::LightBlack),info, Fg(color::LightMagenta), lst.len(), style::Reset);
+}
+
 
 fn style_for_source(source: &str) -> String {
     match source{
