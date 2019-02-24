@@ -44,6 +44,7 @@ fn try_main() -> Result<()>{
         app.write_long_help(&mut v)?;
         String::from_utf8(v)?
     };
+    let mut print_help = true;
 
     let matches = app.get_matches();
 
@@ -69,6 +70,7 @@ fn try_main() -> Result<()>{
     }
 
     if matches.is_present("upgrade") {
+        print_help = false;
 
         let (alpm_pkgs, aur_pkgs) = repo::upgrade::get_outdated_pkgs(&alpm);
 
@@ -94,7 +96,10 @@ fn try_main() -> Result<()>{
             }
         },
         None => {
-           println!("{}", help);
+            if print_help{
+                println!("{}", help);
+            }
+           
         },
     }
 
