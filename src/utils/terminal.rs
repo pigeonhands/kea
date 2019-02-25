@@ -24,7 +24,7 @@ pub fn package_selection(packages: &PackageInfoList, load_error: Option<Box<std:
     if let Some(err) = load_error{
         eprintln!("Error: {}", err);
     }
-    let inp = handle_input();
+    let inp = handle_input(true);
     print!("{}{}", cursor::Show, style::Reset);
     inp
 }
@@ -59,11 +59,15 @@ fn style_for_source(source: &str) -> String {
     }
 }
 
-fn handle_input() -> Vec<i32> {
+pub fn handle_input(multi: bool) -> Vec<i32> {
     let poiner = "=> ";
 
-
-    println!("{}{}Select package with arrow keys, or enter items seperated by space (e.g. 1 2 3){}",poiner, Fg(color::Red), style::Reset);
+    if multi{
+        println!("{}{}Select package with arrow keys, or enter items seperated by space (e.g. 1 2 3){}",poiner, Fg(color::Red), style::Reset);
+    }else{
+         println!("{}{}Select package with arrow keys, or type item index{}",poiner, Fg(color::Red), style::Reset);
+    }
+    
     println!("{}{}[Q] to quit, [Enter] to confirm.{}",poiner, Fg(color::Red), style::Reset);
 
 
@@ -121,7 +125,7 @@ fn handle_input() -> Vec<i32> {
                     write!(stdout,"{} ",cursor::Goto(x,y)).unwrap();
                     write!(stdout,"{}{}{}",cursor::Goto(0,height), poiner, &num_buf).unwrap();
                     last_char = c;
-                }else if c == ' ' &&  num_buf.len() > 0 && last_char != ' '{
+                }else if c == ' ' &&  num_buf.len() > 0 && last_char != ' ' && multi{
                     num_buf.push(' ');
                     last_char = ' ';
                 } else if c == '\n'{

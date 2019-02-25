@@ -8,7 +8,6 @@ use utils::conf::Config;
 use clap::{Arg, App};
 
 use std::error::Error;
-use termion::{color, color::Fg, style};
 
 use crate::app::{Kea};
 
@@ -74,20 +73,6 @@ fn try_main() -> Result<()>{
 
 fn init_alpm(root: &str, db_path: &str, sync_dbs: &Vec<String>) -> Result<alpm_rs::Handle> {
     let alpm = alpm_rs::initialize(root, db_path)?;
-
-    alpm_rs::callbacks::set_log_callback(&alpm, |level,message| {
-        if level > alpm_rs::enums::ALPM_LOG_WARNING{
-            return;
-        }
-        let level_text = match level {
-            alpm_rs::enums::ALPM_LOG_ERROR => format!("{}error{}", Fg(color::Red), style::Reset),
-            alpm_rs::enums::ALPM_LOG_WARNING => format!("{}warn{}", Fg(color::Yellow), style::Reset),
-            alpm_rs::enums::ALPM_LOG_DEBUG => "debug".to_string(),
-            alpm_rs::enums::ALPM_LOG_FUNCTION => "func".to_string(),
-            _ => "?".to_string(),
-        };
-        print!("alpm] ({}) {}", level_text, message);
-    });
 
     for db in sync_dbs {
         alpm.register_syncdb(&db, 0);
