@@ -11,6 +11,7 @@ pub fn get_outdated_pkgs(alpm: &Handle) -> (PackageInfoList, PackageInfoList){
     let mut alpm_outdated = PackageInfoList::default();
     let mut aur_outdated = PackageInfoList::default();
 
+
     let dbs = alpm.sync_dbs();
 
     for p in alpm_pkgs {
