@@ -87,7 +87,7 @@ fn init_alpm(cfg: &Config) -> Result<alpm_rs::Handle> {
         if let Some(servers) = cfg.sources.pkg_sources.get(dbname) {
             for s in servers {
                 if !db.add_server(&s) {
-                    eprintln!("{}] Failed to add server {}", db.name(), &s);
+                    eprintln!("{}] Failed to add server {}", dbname, &s);
                 }
             }
         }

@@ -15,7 +15,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "alpm-rs"
-version = "0.1.22"
+version = "0.1.24"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "libc 0.2.49 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -472,7 +472,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 name = "kea"
 version = "0.1.3"
 dependencies = [
- "alpm-rs 0.1.22 (registry+https://github.com/rust-lang/crates.io-index)",
+ "alpm-rs 0.1.24 (registry+https://github.com/rust-lang/crates.io-index)",
  "aur-client 0.1.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "clap 2.32.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "dirs 1.0.4 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -1421,7 +1421,7 @@ dependencies = [
 [metadata]
 "checksum MacTypes-sys 2.1.0 (registry+https://github.com/rust-lang/crates.io-index)" = "eaf9f0d0b1cc33a4d2aee14fb4b2eac03462ef4db29c8ac4057327d8a71ad86f"
 "checksum adler32 1.0.3 (registry+https://github.com/rust-lang/crates.io-index)" = "7e522997b529f05601e05166c07ed17789691f562762c7f3b987263d2dedee5c"
-"checksum alpm-rs 0.1.22 (registry+https://github.com/rust-lang/crates.io-index)" = "fbfb2565cce16cfb4df551d4a635dbb16890a8d785e2b6e30b6369548a933b47"
+"checksum alpm-rs 0.1.24 (registry+https://github.com/rust-lang/crates.io-index)" = "85b1769041d4cd4d43dd4bb1d3a020352549ab7be18c51c77be03f500fb6a45b"
 "checksum ansi_term 0.11.0 (registry+https://github.com/rust-lang/crates.io-index)" = "ee49baf6cb617b853aa8d93bf420db2383fab46d314482ca2803b40d5fde979b"
 "checksum argon2rs 0.2.5 (registry+https://github.com/rust-lang/crates.io-index)" = "3f67b0b6a86dae6e67ff4ca2b6201396074996379fba2b92ff649126f37cb392"
 "checksum arrayvec 0.4.10 (registry+https://github.com/rust-lang/crates.io-index)" = "92c7fb76bc8826a8b33b4ee5bb07a247a81e76764ab4d55e8f73e3a4d8808c71"

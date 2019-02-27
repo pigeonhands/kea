@@ -5,6 +5,7 @@ use std::cmp;
 
 use aur_client::aur;
 
+/// Retuns a tuple of (alpm_outdated, aur_oudated)
 pub fn get_outdated_pkgs(alpm: &Handle) -> (PackageInfoList, PackageInfoList) {
     let (alpm_pkgs, aur_pkgs) = get_pkgs(&alpm);
     let mut alpm_outdated = PackageInfoList::default();
@@ -28,7 +29,6 @@ pub fn get_outdated_pkgs(alpm: &Handle) -> (PackageInfoList, PackageInfoList) {
 
         let info_ret = aur::info(&aur_pkg_names[current_pkg..current_pkg + end_pkg]);
         current_pkg += max_search_pkgs;
-
         match info_ret {
             Err(e) => {
                 println!("error: {}", e);
@@ -39,7 +39,6 @@ pub fn get_outdated_pkgs(alpm: &Handle) -> (PackageInfoList, PackageInfoList) {
                     println!("aur error: {}", e);
                     break;
                 }
-
                 for pkg in resp.results {
                     if let Some(local_pkg) = aur_pkgs.iter().find(|p| p.name() == &pkg.Name) {
                         if Package::vercmp(local_pkg.version(), &pkg.Version) < 0 {
@@ -52,10 +51,13 @@ pub fn get_outdated_pkgs(alpm: &Handle) -> (PackageInfoList, PackageInfoList) {
             }
         }
     }
+
     (alpm_outdated, aur_outdated)
 }
 
+/// Returns a tuple of (alpm_packages, aur_packages), both Vec<Package>
 pub fn get_pkgs(alpm: &Handle) -> (Vec<Package>, Vec<Package>) {
+    /* //Previous code
     let mut alpm_pkgs = Vec::new();
     let mut aur_pkgs = Vec::new();
 
@@ -73,8 +75,16 @@ pub fn get_pkgs(alpm: &Handle) -> (Vec<Package>, Vec<Package>) {
         }
         if !found {
             aur_pkgs.push(p);
-        }
+       }
     }
-
     (alpm_pkgs, aur_pkgs)
+    */
+    let local_db = alpm.local_db();
+    let alpm_dbs = alpm.sync_dbs();
+
+    local_db.pkgcache().iter().partition(|package| {
+        alpm_dbs
+            .iter()
+            .any(|db| db.get_pkg(package.name()).is_some())
+    })
 }

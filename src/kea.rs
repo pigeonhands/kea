@@ -83,7 +83,7 @@ impl Kea {
     pub fn update_dbs(&self) {
         let dbs = self.alpm.sync_dbs();
         println!("-> Syncing databases");
-        for db in dbs.iter() {
+        for db in &dbs {
             let res = db.update(false);
             if res < 0 {
                 println!("Failed update {}. {:?}", db.name(), self.alpm.error_no());
