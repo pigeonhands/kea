@@ -1,54 +1,62 @@
-mod utils;
-mod repo;
 mod aur;
 mod kea;
-use kea::Kea;
+mod repo;
+mod utils;
 use crate::aur::callbacks;
 use crate::utils::sys;
+use kea::Kea;
 
 use std::error::Error;
 extern crate serde;
+use clap::{App, Arg};
 use utils::conf::Config;
-use clap::{Arg, App};
 
-type Result<T> = std::result::Result<T,Box<Error>>;
+type Result<T> = std::result::Result<T, Box<Error>>;
 
 fn main() {
-    match try_main(){
-        Ok(()) => {},
+    match try_main() {
+        Ok(()) => {}
         Err(e) => {
             eprintln!("Error! {}", e);
         }
     }
 }
 
-fn try_main() -> Result<()>{
-    let mut app =  App::new("kia")
+fn try_main() -> Result<()> {
+    let mut app = App::new("kia")
         .about("Package manager for arch linux")
         .author("Sam M.")
         .version(env!("CARGO_PKG_VERSION"))
-    .arg(Arg::with_name("gen-conf")
-        .long("gen-conf")
-        .takes_value(false)
-        .help("generates a new kea config file in ~/.kea"))
-    .arg(Arg::with_name("local")
-        .long("local")
-        .help("searches local cashes only."))
-    .arg(Arg::with_name("aur")
-        .long("aur")
-        .help("Searches aur only"))
-    .arg(Arg::with_name("sync")
-        .short("-s")
-        .long("sync")
-        .help("Sync databases"))
-    .arg(Arg::with_name("upgrade")
-        .short("-u")
-        .long("upgrade")
-        .help("upgrade packages"))
-    .arg(Arg::with_name("package")
-        .index(1)
-        .help("package to search for")
-        .required(false));
+        .arg(
+            Arg::with_name("gen-conf")
+                .long("gen-conf")
+                .takes_value(false)
+                .help("generates a new kea config file in ~/.kea"),
+        )
+        .arg(
+            Arg::with_name("local")
+                .long("local")
+                .help("searches local cashes only."),
+        )
+        .arg(Arg::with_name("aur").long("aur").help("Searches aur only"))
+        .arg(
+            Arg::with_name("sync")
+                .short("-s")
+                .long("sync")
+                .help("Sync databases"),
+        )
+        .arg(
+            Arg::with_name("upgrade")
+                .short("-u")
+                .long("upgrade")
+                .help("upgrade packages"),
+        )
+        .arg(
+            Arg::with_name("package")
+                .index(1)
+                .help("package to search for")
+                .required(false),
+        );
 
     let help = {
         let mut v = Vec::new();
@@ -57,14 +65,14 @@ fn try_main() -> Result<()>{
     };
 
     let matches = app.get_matches();
-    
-    let cfg = if matches.is_present("gen-conf"){
+
+    let cfg = if matches.is_present("gen-conf") {
         gen_config()?
-    }else{
+    } else {
         load_config()?
     };
 
-    let kea = Kea{
+    let kea = Kea {
         matches: matches,
         alpm: init_alpm(&cfg)?,
         config: cfg,
@@ -80,9 +88,9 @@ fn init_alpm(cfg: &Config) -> Result<alpm_rs::Handle> {
 
     for dbname in &cfg.packages.sync_dbs {
         let db = alpm.register_syncdb(&dbname, 0);
-        if let Some(servers) = cfg.sources.pkg_sources.get(dbname){
-            for s in servers{
-                if !db.add_server(&s){
+        if let Some(servers) = cfg.sources.pkg_sources.get(dbname) {
+            for s in servers {
+                if !db.add_server(&s) {
                     eprintln!("{}] Failed to add server {}", db.name(), &s);
                 }
             }
@@ -92,30 +100,29 @@ fn init_alpm(cfg: &Config) -> Result<alpm_rs::Handle> {
     Ok(alpm)
 }
 
-fn gen_config() -> Result<Config>{
+fn gen_config() -> Result<Config> {
     let config = Config::default();
     config.save()?;
     Ok(config)
 }
-fn load_config() -> Result<Config>{
+fn load_config() -> Result<Config> {
     match Config::load() {
         Err(e) => {
-            eprintln!("Failed to load config. use --gen-conf to make a new one.");
-            return Err(e);
-        },
-        Ok(c) => Ok(c),
+            eprintln!("Failed to load config.");
+            eprintln!("{}", e);
+            eprintln!("use --gen-conf to make a new one.");
+            Err(e)
+        }
+        ok => ok,
     }
 }
 
-
-pub fn start_with_kea(kea: &Kea) -> Result<()>{
-    
+pub fn start_with_kea(kea: &Kea) -> Result<()> {
     callbacks::register_callbacks(&kea.alpm);
 
     let mut _print_help = true;
 
-    if kea.matches.is_present("sync"){
-
+    if kea.matches.is_present("sync") {
         if !sys::is_root() {
             return Err("Sync (-s, --sync) requires root.".into());
         }
@@ -126,13 +133,17 @@ pub fn start_with_kea(kea: &Kea) -> Result<()>{
     if kea.matches.is_present("upgrade") {
         kea.update_packages();
     }
-    
-    match kea.matches.value_of("package"){
+
+    match kea.matches.value_of("package") {
         Some(query) => kea.install(query)?,
-        None => if _print_help{ println!("Nothing to do.") },
+        None => {
+            if _print_help {
+                println!("Nothing to do.")
+            }
+        }
     };
 
-    if !kea.alpm.release(){
+    if !kea.alpm.release() {
         eprintln!("Failed to release apm handle. {:?}", kea.alpm.error_no());
     }
     Ok(())

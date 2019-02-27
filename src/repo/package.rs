@@ -1,12 +1,11 @@
 use std::iter::FromIterator;
 
-use aur_client::aur;
 use alpm_rs;
-
+use aur_client::aur;
 
 #[derive(Clone)]
-pub struct PackageInfo{
-    pub name : String,
+pub struct PackageInfo {
+    pub name: String,
     pub source: String,
     pub description: String,
     pub version: String,
@@ -14,9 +13,9 @@ pub struct PackageInfo{
     pub poplarity: f64,
 }
 
-impl From<aur::Package> for PackageInfo{
-    fn from(p: aur::Package) -> PackageInfo{
-        PackageInfo{
+impl From<aur::Package> for PackageInfo {
+    fn from(p: aur::Package) -> PackageInfo {
+        PackageInfo {
             name: p.Name,
             source: "aur".to_string(),
             description: p.Description.unwrap_or("-".to_string()),
@@ -28,8 +27,8 @@ impl From<aur::Package> for PackageInfo{
 }
 
 impl From<alpm_rs::package::Package> for PackageInfo {
-    fn from(p: alpm_rs::package::Package) -> PackageInfo{
-        PackageInfo{
+    fn from(p: alpm_rs::package::Package) -> PackageInfo {
+        PackageInfo {
             name: p.name().to_string(),
             source: p.db().name().to_string(),
             description: p.description().to_string(),
@@ -44,8 +43,7 @@ pub struct PackageInfoList {
     pub pkgs: Vec<PackageInfo>,
 }
 
-
-impl PackageInfoList{
+impl PackageInfoList {
     pub fn len(&self) -> usize {
         self.pkgs.len()
     }
@@ -55,28 +53,26 @@ impl PackageInfoList{
     }
 
     pub fn merge(&mut self, lst: PackageInfoList) {
-        for p in lst.pkgs{
+        for p in lst.pkgs {
             self.pkgs.push(p);
         }
     }
 
     #[allow(dead_code)]
-    pub fn pick(&mut self, ammount: usize) -> PackageInfoList{
-        PackageInfoList{
+    pub fn pick(&mut self, ammount: usize) -> PackageInfoList {
+        PackageInfoList {
             pkgs: self.pkgs[0..ammount].to_vec(),
         }
     }
 
-    pub fn get(&mut self, index: usize) -> PackageInfo{
+    pub fn get(&mut self, index: usize) -> PackageInfo {
         self.pkgs[index].clone()
     }
 }
 
 impl Default for PackageInfoList {
-    fn default() -> PackageInfoList{
-        PackageInfoList{
-            pkgs: Vec::new(),
-        }
+    fn default() -> PackageInfoList {
+        PackageInfoList { pkgs: Vec::new() }
     }
 }
 
@@ -88,33 +84,26 @@ impl std::ops::Index<usize> for PackageInfoList {
     }
 }
 
-impl From<Vec<aur::Package>> for PackageInfoList{
-    fn from(pkgs: Vec<aur::Package>) -> PackageInfoList{
+impl From<Vec<aur::Package>> for PackageInfoList {
+    fn from(pkgs: Vec<aur::Package>) -> PackageInfoList {
         PackageInfoList::from_iter(pkgs)
     }
 }
 
-
-
 impl FromIterator<aur::Package> for PackageInfoList {
-    fn from_iter<I: IntoIterator<Item=aur::Package>>(iter: I) -> Self {
-        let mut pl = PackageInfoList{
-            pkgs: Vec::new(),
-        };
-        for p in iter{
+    fn from_iter<I: IntoIterator<Item = aur::Package>>(iter: I) -> Self {
+        let mut pl = PackageInfoList { pkgs: Vec::new() };
+        for p in iter {
             pl.pkgs.push(p.into());
         }
         pl
     }
 }
 
-
 impl FromIterator<alpm_rs::package::Package> for PackageInfoList {
-    fn from_iter<I: IntoIterator<Item=alpm_rs::package::Package>>(iter: I) -> Self {
-        let mut pl = PackageInfoList{
-            pkgs: Vec::new(),
-        };
-        for p in iter{
+    fn from_iter<I: IntoIterator<Item = alpm_rs::package::Package>>(iter: I) -> Self {
+        let mut pl = PackageInfoList { pkgs: Vec::new() };
+        for p in iter {
             pl.pkgs.push(p.into());
         }
         pl
