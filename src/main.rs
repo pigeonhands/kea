@@ -14,11 +14,8 @@ use utils::conf::Config;
 type Result<T> = std::result::Result<T, Box<Error>>;
 
 fn main() {
-    match try_main() {
-        Ok(()) => {}
-        Err(e) => {
-            eprintln!("Error! {}", e);
-        }
+    if let Some(e) = try_main().err() {
+        eprintln!("Error! {}", e);
     }
 }
 
@@ -79,8 +76,7 @@ fn try_main() -> Result<()> {
         help_string: help,
     };
 
-    start_with_kea(&kea)?;
-    Ok(())
+    start_with_kea(&kea)
 }
 
 fn init_alpm(cfg: &Config) -> Result<alpm_rs::Handle> {
@@ -96,7 +92,6 @@ fn init_alpm(cfg: &Config) -> Result<alpm_rs::Handle> {
             }
         }
     }
-
     Ok(alpm)
 }
 
@@ -106,15 +101,12 @@ fn gen_config() -> Result<Config> {
     Ok(config)
 }
 fn load_config() -> Result<Config> {
-    match Config::load() {
-        Err(e) => {
-            eprintln!("Failed to load config.");
-            eprintln!("{}", e);
-            eprintln!("use --gen-conf to make a new one.");
-            Err(e)
-        }
-        ok => ok,
-    }
+    Config::load().or_else(|e| {
+        eprintln!("Failed to load config.");
+        eprintln!("{}", e);
+        eprintln!("use --gen-conf to make a new one.");
+        Err(e)
+    })
 }
 
 pub fn start_with_kea(kea: &Kea) -> Result<()> {

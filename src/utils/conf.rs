@@ -90,16 +90,15 @@ impl Config{
 
         let cfg_path = Config::config_path();
 
-        
-        if !cfg_path.exists(){
-            let cfg = Config::default();
-            cfg.save()?;
-            return Ok(cfg);
-        }
+        let cfg = if cfg_path.exists(){
+            let cfg_content = fs::read_to_string(cfg_path)?;
+            toml::from_str(&cfg_content)?
+        }else{
+            let new_cfg = Config::default();
+            new_cfg.save()?;
+            new_cfg
+        };
 
-        let cfg_content = fs::read_to_string(cfg_path)?;
-
-        let cfg : Config = toml::from_str(&cfg_content)?;
         Ok(cfg)
     }
 

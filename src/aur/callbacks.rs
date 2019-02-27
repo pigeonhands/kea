@@ -35,7 +35,6 @@ fn question_callback(q: QuestionArgs) {
     match &q.question {
         Question::InstallIgnorePkg(_) => {
             q.set_answer(1);
-            return;
         }
         Question::Conflict(c) => {
             println!(
