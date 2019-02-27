@@ -4,12 +4,22 @@ use serde::{Serialize, Deserialize};
 use std::error::Error;
 use std::fs;
 use pacman::pacman_conf;
+use std::collections::HashMap;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Config{
     pub display : DisplayConfig,
+    pub build : BuildConfig,
     pub packages: PackagesConfig,
     pub alpm : AlpmConfig,
+    pub sources: Sources,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct BuildConfig{
+    build_dir : String,
+    makepkg_path: String,
+    keep_source : bool,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -22,6 +32,10 @@ pub struct PackagesConfig{
     pub sync_dbs: Vec<String>,
 }
 
+#[derive(Serialize, Deserialize, Debug)]
+pub struct Sources{
+    pub pkg_sources: HashMap<String,Vec<String>>,
+}
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct AlpmConfig{
@@ -36,8 +50,17 @@ pub struct AlpmConfig{
 impl Default for Config{
     fn default() -> Self{
         let pmcfg = pacman_conf::get_config();
+        let mut sources = HashMap::new();
+        for repo in &pmcfg.repos{
+            sources.insert(repo.name.clone(), repo.servers.clone());
+        }
         Config{
             display: DisplayConfig{
+            },
+            build: BuildConfig{
+                build_dir: "~/.cache/kea".into(),
+                makepkg_path: "makepkg".into(),
+                keep_source: false,
             },
             packages: PackagesConfig{
                 search_aur_local_under: 80,
@@ -50,6 +73,9 @@ impl Default for Config{
                 ignore_pkg: pmcfg.ignore_pkg,
                 ignore_group: pmcfg.ignore_group,
             },
+            sources: Sources{
+                pkg_sources: sources,
+            }
         }
     }
 }

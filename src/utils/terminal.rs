@@ -59,6 +59,20 @@ fn style_for_source(source: &str) -> String {
     }
 }
 
+pub fn handle_yes_no(default:bool) -> bool {
+    let stdin = stdin();
+
+    let mut input = String::new();
+    stdin.read_line(&mut input).expect("failed to read input");
+
+    if input.len() > 0{
+        let fc = input.chars().next().unwrap();
+        (fc == 'y' || fc == 'Y')
+    }else{
+        default
+    }
+}
+
 pub fn handle_input(multi: bool) -> Vec<i32> {
     let poiner = "=> ";
 

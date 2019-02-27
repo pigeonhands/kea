@@ -3,6 +3,7 @@ use std::iter::FromIterator;
 use aur_client::aur;
 use alpm_rs;
 
+
 #[derive(Clone)]
 pub struct PackageInfo{
     pub name : String,

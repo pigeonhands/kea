@@ -1,31 +1,8 @@
-pub mod kea;
-pub use crate::app::kea::{Kea,Result};
 use termion::{color, color::Fg, style};
-use alpm_rs::question::*;
-use alpm_rs::List;
 use crate::utils::terminal;
+use alpm_rs::question::*;
 
-
-pub fn start(kea: &Kea) -> Result<()>{
-    
-    register_callbacks(&kea.alpm);
-
-    let mut print_help = true;
-
-    if kea.matches.is_present("upgrade") {
-        print_help = false;
-        kea.update();
-    }
-    
-    match kea.matches.value_of("package"){
-        Some(query) => kea.install(query)?,
-        None => if print_help{ println!("{}", kea.help_string) },
-    };
-
-    Ok(())
-}
-
-fn register_callbacks(alpm: &alpm_rs::Handle) {
+pub fn register_callbacks(alpm: &alpm_rs::Handle) {
     alpm_rs::callbacks::set_log_callback(&alpm, |level,message| {
         if level > alpm_rs::enums::ALPM_LOG_WARNING{
             return;
@@ -44,14 +21,25 @@ fn register_callbacks(alpm: &alpm_rs::Handle) {
         println!("Downloading {} (%{} - {} bytes remaining)", file, (xfered/total)*100, total-xfered);
     });
 
-    alpm_rs::callbacks::set_question_callback(&alpm, |q|{
+    alpm_rs::callbacks::set_question_callback(&alpm, question_callback);
+}
 
-        if let Question::InstallIgnorePkg(_) = q.question{
+
+
+fn question_callback(q: QuestionArgs){
+    match &q.question{
+        Question::InstallIgnorePkg(_) => {
             q.set_answer(1);
             return;
-        }
-
-        if let Question::SelectProvider(p) = &q.question {
+        },
+        Question::Conflict(c) => {
+            println!("Conflicting packages {} and {}. ({}) Remove conflict?", c.conflict.package1, c.conflict.package2, c.conflict.reason.name);
+            print!("[Y]es/[n]o: ");
+            if terminal::handle_yes_no(true) {
+                q.set_answer(1);
+            }
+        },
+        Question::SelectProvider(p) => {
             let pkgs : Vec<alpm_rs::package::Package> = p.providers.iter().collect();
             loop {
                 let num_package = pkgs.len();
@@ -69,8 +57,9 @@ fn register_callbacks(alpm: &alpm_rs::Handle) {
                     return;
                 }
             }
-        }
-
-
-    });
+        },
+        _ => {
+            //other questions
+        },
+    }
 }

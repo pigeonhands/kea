@@ -1,5 +1,5 @@
 use crate::repo::package::PackageInfoList;
-use alpm_rs::{Handle, List};
+use alpm_rs::{Handle};
 use alpm_rs::package::Package;
 use std::cmp;
 

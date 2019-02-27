@@ -12,17 +12,17 @@ use crate::utils::terminal;
 use crate::repo::package::PackageInfoList;
 use crate::repo::{search,upgrade};
 
+
 pub struct Kea {
     pub matches: ArgMatches<'static>,
     pub alpm: alpm_rs::Handle,
     pub config: Config,
     pub help_string: String,
 }
-pub 
-type Result<T> = std::result::Result<T, Box<Error>>;
+pub type Result<T> = std::result::Result<T, Box<Error>>;
 
 impl Kea {
-    pub fn update(&self) {
+    pub fn update_packages(&self) {
         let (alpm_pkgs, aur_pkgs) = upgrade::get_outdated_pkgs(&self.alpm);
 
         if alpm_pkgs.len() > 0 {
@@ -68,6 +68,11 @@ impl Kea {
             }
         }
 
+        if pkgs.len() < 1{
+            println!("No packages found.");
+            return Ok(Default::default());
+        }
+
         let mut selected_packages = PackageInfoList::default();
         let input_indexes = terminal::package_selection(&pkgs, aur_error);
         for p in input_indexes {
@@ -77,5 +82,27 @@ impl Kea {
             }
         }
         Ok(selected_packages)
+    }
+
+    pub fn update_dbs(&self) {
+        let dbs = self.alpm.sync_dbs();
+        println!("-> Syncing databases");
+        for db in dbs.iter() {
+            let res = db.update(false);
+            if res < 0{
+                println!("Failed update {}. {:?}",db.name(), self.alpm.error_no());
+            }else if res == 1 {
+                println!("{} up to date", db.name());
+            }
+        }
+    }
+
+    pub fn update_alpm_packages(&self) -> bool {
+        if !self.alpm.sys_upgrade(true){
+            self.alpm.trans_release();
+            return false;
+        }
+        false
+        
     }
 }

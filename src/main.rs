@@ -1,15 +1,15 @@
 mod utils;
 mod repo;
-mod app;
-
-extern crate serde;
-use utils::conf::Config;
-
-use clap::{Arg, App};
+mod aur;
+mod kea;
+use kea::Kea;
+use crate::aur::callbacks;
+use crate::utils::sys;
 
 use std::error::Error;
-
-use crate::app::{Kea};
+extern crate serde;
+use utils::conf::Config;
+use clap::{Arg, App};
 
 type Result<T> = std::result::Result<T,Box<Error>>;
 
@@ -37,6 +37,10 @@ fn try_main() -> Result<()>{
     .arg(Arg::with_name("aur")
         .long("aur")
         .help("Searches aur only"))
+    .arg(Arg::with_name("sync")
+        .short("-s")
+        .long("sync")
+        .help("Sync databases"))
     .arg(Arg::with_name("upgrade")
         .short("-u")
         .long("upgrade")
@@ -62,20 +66,27 @@ fn try_main() -> Result<()>{
 
     let kea = Kea{
         matches: matches,
-        alpm: init_alpm(&cfg.alpm.root_dir, &cfg.alpm.db_path, &cfg.packages.sync_dbs)?,
+        alpm: init_alpm(&cfg)?,
         config: cfg,
         help_string: help,
     };
 
-    app::start(&kea)?;
+    start_with_kea(&kea)?;
     Ok(())
 }
 
-fn init_alpm(root: &str, db_path: &str, sync_dbs: &Vec<String>) -> Result<alpm_rs::Handle> {
-    let alpm = alpm_rs::initialize(root, db_path)?;
+fn init_alpm(cfg: &Config) -> Result<alpm_rs::Handle> {
+    let alpm = alpm_rs::initialize(&cfg.alpm.root_dir, &cfg.alpm.db_path)?;
 
-    for db in sync_dbs {
-        alpm.register_syncdb(&db, 0);
+    for dbname in &cfg.packages.sync_dbs {
+        let db = alpm.register_syncdb(&dbname, 0);
+        if let Some(servers) = cfg.sources.pkg_sources.get(dbname){
+            for s in servers{
+                if !db.add_server(&s){
+                    eprintln!("{}] Failed to add server {}", db.name(), &s);
+                }
+            }
+        }
     }
 
     Ok(alpm)
@@ -97,6 +108,32 @@ fn load_config() -> Result<Config>{
 }
 
 
+pub fn start_with_kea(kea: &Kea) -> Result<()>{
+    
+    callbacks::register_callbacks(&kea.alpm);
 
+    let mut _print_help = true;
 
+    if kea.matches.is_present("sync"){
 
+        if !sys::is_root() {
+            return Err("Sync (-s, --sync) requires root.".into());
+        }
+        _print_help = false;
+        kea.update_dbs();
+    }
+
+    if kea.matches.is_present("upgrade") {
+        kea.update_packages();
+    }
+    
+    match kea.matches.value_of("package"){
+        Some(query) => kea.install(query)?,
+        None => if _print_help{ println!("Nothing to do.") },
+    };
+
+    if !kea.alpm.release(){
+        eprintln!("Failed to release apm handle. {:?}", kea.alpm.error_no());
+    }
+    Ok(())
+}
