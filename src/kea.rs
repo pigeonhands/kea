@@ -98,10 +98,14 @@ impl Kea {
     }
 
     pub fn update_alpm_packages(&self) -> bool {
+        if !self.alpm.trans_init(1){
+            return false;
+        }
         if !self.alpm.sys_upgrade(true){
             self.alpm.trans_release();
             return false;
         }
+        
         false
         
     }
