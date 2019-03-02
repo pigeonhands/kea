@@ -70,7 +70,7 @@ fn try_main() -> Result<()> {
     };
 
     let kea = Kea {
-        matches: matches,
+        matches,
         alpm: init_alpm(&cfg)?,
         config: cfg,
         help_string: help,

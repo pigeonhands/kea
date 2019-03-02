@@ -18,7 +18,7 @@ impl From<aur::Package> for PackageInfo {
         PackageInfo {
             name: p.Name,
             source: "aur".to_string(),
-            description: p.Description.unwrap_or("-".to_string()),
+            description: p.Description.unwrap_or_else(|| "-".to_string()),
             version: p.Version,
             votes: p.NumVotes,
             poplarity: p.Popularity,

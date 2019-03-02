@@ -10,8 +10,8 @@ pub fn package_selection(
     load_error: Option<Box<std::error::Error>>,
 ) -> Vec<i32> {
     let num_package = packages.len();
-    for i in 0..num_package {
-        let p = &packages[i];
+    for (i, p) in packages.pkgs.iter().enumerate() {
+        //let p = &packages[i];
         println!(
             " {select_index} {source}/{packagename} {version}",
             select_index = (num_package - i),
@@ -69,7 +69,7 @@ pub fn handle_yes_no(default: bool) -> bool {
     let mut input = String::new();
     stdin.read_line(&mut input).expect("failed to read input");
 
-    if input.len() > 0 {
+    if !input.is_empty() {
         let fc = input.chars().next().unwrap();
         (fc == 'y' || fc == 'Y')
     } else {
@@ -116,14 +116,13 @@ pub fn handle_input(multi: bool) -> Vec<i32> {
 
     write!(stdout, "{}{}", cursor::Goto(0, height), poiner).unwrap();
 
-    cursor::Goto(x, y);
     write!(stdout, "{}{}→", cursor::Hide, cursor::Goto(x, y)).unwrap();
     stdout.flush().unwrap();
 
     for c in stdin.keys() {
         match c.unwrap() {
             Key::Char('q') => {
-                write!(stdout, "{}\n", cursor::Goto(0, height + buffer_lines)).unwrap();
+                writeln!(stdout, "{}", cursor::Goto(0, height + buffer_lines)).unwrap();
                 stdout.flush().unwrap();
                 return Vec::new();
             }
@@ -141,20 +140,17 @@ pub fn handle_input(multi: bool) -> Vec<i32> {
                     cursor_index -= 1;
                 }
             }
-            Key::Backspace => match num_buf.pop() {
-                Some(c) => {
-                    last_char = c;
-                    write!(
-                        stdout,
-                        "{}{}{}{}",
-                        cursor::Goto(0, height),
-                        termion::clear::CurrentLine,
-                        poiner,
-                        &num_buf
-                    )
-                    .unwrap();
-                }
-                None => {}
+            Key::Backspace => if let Some(c) = num_buf.pop() {
+                last_char = c;
+                write!(
+                    stdout,
+                    "{}{}{}{}",
+                    cursor::Goto(0, height),
+                    termion::clear::CurrentLine,
+                    poiner,
+                    &num_buf
+                )
+                .unwrap();
             },
             Key::Char(c) => {
                 if c.is_numeric() {
@@ -162,7 +158,7 @@ pub fn handle_input(multi: bool) -> Vec<i32> {
                     write!(stdout, "{} ", cursor::Goto(x, y)).unwrap();
                     write!(stdout, "{}{}{}", cursor::Goto(0, height), poiner, &num_buf).unwrap();
                     last_char = c;
-                } else if c == ' ' && num_buf.len() > 0 && last_char != ' ' && multi {
+                } else if c == ' ' && !num_buf.is_empty() && last_char != ' ' && multi {
                     num_buf.push(' ');
                     last_char = ' ';
                 } else if c == '\n' {
@@ -171,7 +167,7 @@ pub fn handle_input(multi: bool) -> Vec<i32> {
             }
             _ => {}
         }
-        if num_buf.len() == 0 {
+        if num_buf.is_empty() {
             write!(stdout, "{}{}→", cursor::Hide, cursor::Goto(x, y)).unwrap();
         } else {
             write!(
@@ -189,10 +185,10 @@ pub fn handle_input(multi: bool) -> Vec<i32> {
         stdout.flush().unwrap();
     }
 
-    write!(stdout, "{}\n", cursor::Goto(0, height + buffer_lines + 1)).unwrap();
+    writeln!(stdout, "{}", cursor::Goto(0, height + buffer_lines + 1)).unwrap();
     stdout.flush().unwrap();
 
-    if num_buf.len() > 0 {
+    if !num_buf.is_empty() {
         num_buf
             .split(' ')
             .map(|s| s.parse().unwrap_or(-1))

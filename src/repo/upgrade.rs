@@ -14,7 +14,7 @@ pub fn get_outdated_pkgs(alpm: &Handle) -> (PackageInfoList, PackageInfoList) {
     let dbs = alpm.sync_dbs();
 
     for p in alpm_pkgs {
-        if let Some(_) = p.newer_version(&dbs) {
+        if p.newer_version(&dbs).is_some() {
             alpm_outdated.push(p.into());
         }
     }
@@ -40,7 +40,7 @@ pub fn get_outdated_pkgs(alpm: &Handle) -> (PackageInfoList, PackageInfoList) {
                     break;
                 }
                 for pkg in resp.results {
-                    if let Some(local_pkg) = aur_pkgs.iter().find(|p| p.name() == &pkg.Name) {
+                    if let Some(local_pkg) = aur_pkgs.iter().find(|p| p.name() == pkg.Name) {
                         if Package::vercmp(local_pkg.version(), &pkg.Version) < 0 {
                             aur_outdated.push(pkg.into());
                         }
